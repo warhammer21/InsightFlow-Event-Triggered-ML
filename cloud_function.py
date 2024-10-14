@@ -1,8 +1,15 @@
 import pandas as pd
-from google.cloud import storage, tasks_v2
 import json
+from google.cloud import storage, tasks_v2
+from io import StringIO  # Import StringIO from io module
 
 def handle_storage_event(event, context):
+    """Triggered by a change to a Cloud Storage bucket.
+    Args:
+        event (dict): The event payload.
+        context (google.cloud.functions.Context): The context of the event.
+    """
+    # Access the bucket name and file name from the event
     bucket_name = event['bucket']
     file_name = event['name']
 
@@ -13,10 +20,15 @@ def handle_storage_event(event, context):
 
     # Download the file content as a string and parse it with pandas
     csv_data = blob.download_as_text()
-    df = pd.read_csv(pd.compat.StringIO(csv_data), header=None)
+    df = pd.read_csv(StringIO(csv_data), header=None)  # Use StringIO here
 
     # Extract the 'data' column (assuming it’s the first column) as a JSON object
     data_values = json.loads(df.iloc[0, 0])  # Assumes data format is {"data": [...]}
+    data_payload = {"data": data_values}
+    print('XXXXXXXX')
+    print(data_payload)
+    print('XXXXXXXX')
+    print(type(data_payload))
 
     # Define the task
     client = tasks_v2.CloudTasksClient()
@@ -25,7 +37,7 @@ def handle_storage_event(event, context):
             'http_method': tasks_v2.HttpMethod.POST,
             'url': 'https://mindful-path-434005-m5.uc.r.appspot.com/predict',  # Replace with your App Engine URL
             'headers': {'Content-Type': 'application/json'},
-            'body': json.dumps(data_values).encode()
+            'body': json.dumps(data_payload).encode()
         }
     }
 
