@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "insightflow"
+version = "1"
+description = ""
+authors = ["warhammer21 <shreyakvashisht21@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+google-cloud-tasks = "^2.16.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
